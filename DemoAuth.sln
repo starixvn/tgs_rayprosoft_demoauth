@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoAuth", "DemoAuth\DemoAuth.csproj", "{418A00D1-71C3-43C5-ABB7-9E0F0BF148AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{418A00D1-71C3-43C5-ABB7-9E0F0BF148AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{418A00D1-71C3-43C5-ABB7-9E0F0BF148AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{418A00D1-71C3-43C5-ABB7-9E0F0BF148AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{418A00D1-71C3-43C5-ABB7-9E0F0BF148AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {39693BB8-7B15-476A-A913-50E1F47DF3E1}
+	EndGlobalSection
+EndGlobal
