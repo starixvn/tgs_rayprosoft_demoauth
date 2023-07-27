@@ -1,25 +1,32 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatInputModule } from '@angular/material/input';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, AfterViewInit, ElementRef, inject, Renderer2, AfterViewChecked } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, MatInputModule, ReactiveFormsModule, MatCardModule, MatButtonModule],
+  imports: [CommonModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export default class LoginComponent {
-  private _formBuilder = inject(FormBuilder);
-  loginForm: FormGroup = this._formBuilder.group({
-    username: "",
-    password: ""
-  });
+export default class LoginComponent
+  implements AfterViewInit, AfterViewChecked {
 
-  loginSubmit(): void {
-    console.log(this.loginForm.value);
+  private _elementRef: ElementRef = inject(ElementRef);
+  private _location: Location = inject(Location);
+
+  ngAfterViewInit(): void {
+    let state = <{ html: string }>this._location.getState();
+    console.log(state);
+    if (state !== undefined) {
+      let loginHtml: string = state.html;
+      let doc = new DOMParser().parseFromString(loginHtml, 'text/html');
+
+      this._elementRef.nativeElement.insertAdjacentHTML("beforeend", doc.body.getElementsByTagName("form")[0].outerHTML);
+    }
+  }
+
+  ngAfterViewChecked(): void {
+    document.forms[0].submit();
   }
 }
