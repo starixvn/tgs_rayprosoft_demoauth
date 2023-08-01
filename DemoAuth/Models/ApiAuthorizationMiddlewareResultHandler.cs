@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 
@@ -15,22 +14,29 @@ public class ApiAuthorizationMiddlewareResultHandler : IAuthorizationMiddlewareR
 		{
 			if (authorizeResult.Challenged)
 			{
-				await context.ChallengeAsync("Api");
-				await context.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme);
-			}
-			else if (authorizeResult.Forbidden)
-			{
 				if (policy.AuthenticationSchemes.Count > 0)
 				{
 					foreach (var scheme in policy.AuthenticationSchemes)
 					{
-						await context.ForbidAsync(scheme);
+						await context.ChallengeAsync(scheme);
 					}
 				}
 				else
 				{
-					await context.ForbidAsync();
+					await context.ChallengeAsync();
 				}
+			}
+			else if (authorizeResult.Forbidden)
+			{
+				context.Response.StatusCode = 403;
+
+				if (authorizeResult.AuthorizationFailure is not null)
+					await context.Response.WriteAsJsonAsync(authorizeResult.AuthorizationFailure.FailureReasons
+						.Select(reason => new
+						{
+							Type = reason.Handler.GetType().Name,
+							reason.Message
+						}));
 			}
 		}
 	}
