@@ -2,14 +2,14 @@
 
 public class HeaderValueConstraint : IRouteConstraint
 {
-	private readonly string _headerName;
+	private readonly string m_HeaderName;
 
 	public HeaderValueConstraint(string headerName)
 	{
 		if (string.IsNullOrWhiteSpace(headerName))
 			throw new ArgumentException($"'{nameof(headerName)}' 不得為 Null 或空白字元。", nameof(headerName));
 
-		_headerName = headerName;
+		m_HeaderName = headerName;
 	}
 
 	public bool Match(HttpContext? httpContext, IRouter? route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
@@ -17,9 +17,9 @@ public class HeaderValueConstraint : IRouteConstraint
 		if (httpContext is null)
 			return false;
 
-		if (httpContext.Request.Headers.TryGetValue(_headerName, out var headerValue))
+		if (httpContext.Request.Headers.TryGetValue(m_HeaderName, out var headerValue))
 		{
-			values[_headerName] = headerValue;
+			values[m_HeaderName] = headerValue;
 
 			return true;
 		}
