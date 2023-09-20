@@ -20,6 +20,7 @@ public class DemoHttpFactory : IAuthorizationFunctionFactory<string>
 			"test1" => new HttpFunction(Guid.NewGuid(), entity, false, new HttpPathFeature("api/info/test/{id:int}", m_ServiceProvider)),
 			"test2" => new HttpFunction(Guid.NewGuid(), entity, false),
 			"test3" => new HttpFunction(Guid.NewGuid(), entity, false),
+			"aaa" => new HttpFunction(Guid.NewGuid(), entity, true, new HttpPathFeature("api/login", m_ServiceProvider)),
 			_ => null
 		};
 }

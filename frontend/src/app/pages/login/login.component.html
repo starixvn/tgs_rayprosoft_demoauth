@@ -1,0 +1,9 @@
+<form action="/api/login?loginChallenge={{loginChallenge}}" method="post" [formGroup]="forms" onsubmit="submit()">
+  <mat-form-field>
+    <input name="userName" type="text" matInput formControlName="userName" placeholder="input user name">
+  </mat-form-field>
+  <mat-form-field>
+    <input name="password" type="password" matInput formControlName="password" placeholder="input password">
+  </mat-form-field>
+  <button type="submit">Login</button>
+</form>

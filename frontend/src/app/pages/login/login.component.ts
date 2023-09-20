@@ -1,32 +1,34 @@
-import { Component, AfterViewInit, ElementRef, inject, Renderer2, AfterViewChecked } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AfterViewChecked, AfterViewInit, Component, ElementRef, OnInit, Renderer2, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { MatInputModule } from '@angular/material/input';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatInputModule, ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export default class LoginComponent
-  implements AfterViewInit, AfterViewChecked {
+export default class LoginComponent implements OnInit {
+  public loginChallenge: string | null = null;
+  public forms: FormGroup;
+  private _route: ActivatedRoute = inject(ActivatedRoute);
+  private _fromBuilder = inject(FormBuilder);
 
-  private _elementRef: ElementRef = inject(ElementRef);
-  private _location: Location = inject(Location);
-
-  ngAfterViewInit(): void {
-    let state = <{ html: string }>this._location.getState();
-    console.log(state);
-    if (state !== undefined) {
-      let loginHtml: string = state.html;
-      let doc = new DOMParser().parseFromString(loginHtml, 'text/html');
-
-      this._elementRef.nativeElement.insertAdjacentHTML("beforeend", doc.body.getElementsByTagName("form")[0].outerHTML);
-    }
+  constructor() {
+    this.forms = this._fromBuilder.group({
+      userName: [''],
+      password: ['']
+    });
   }
 
-  ngAfterViewChecked(): void {
-    document.forms[0].submit();
+  async ngOnInit(): Promise<void> {
+    const queryParams = await firstValueFrom(this._route.queryParamMap);
+
+    this.loginChallenge = queryParams.get("loginChallenge");
   }
 }

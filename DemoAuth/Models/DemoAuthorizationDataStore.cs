@@ -6,7 +6,6 @@ public class DemoAuthorizationDataStore : AuthorizationDataStore<string>
 {
 	private readonly Lazy<IReadOnlyDictionary<string, IAuthorizationFunction>> m_FunctionFactories;
 
-
 	public DemoAuthorizationDataStore(IEnumerable<IAuthorizationFunctionFactory<string>> functionFactories)
 		: base(functionFactories)
 	{
@@ -16,7 +15,8 @@ public class DemoAuthorizationDataStore : AuthorizationDataStore<string>
 			{
 				"test1",
 				"test2",
-				"test3"
+				"test3",
+				"aaa"
 			};
 
 			return functions

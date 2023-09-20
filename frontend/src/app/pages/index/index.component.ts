@@ -1,8 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { catchError, throwError, lastValueFrom } from 'rxjs';
-import { Router } from '@angular/router';
+import { catchError, lastValueFrom, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-index',
@@ -16,19 +16,16 @@ export default class IndexComponent
 
   private _http: HttpClient = inject(HttpClient);
   private _router: Router = inject(Router);
-  private _document: Document = inject(DOCUMENT);
 
   ngOnInit(): void {
     this._http.get<string>("/api/account")
       .pipe(
         catchError((error: HttpErrorResponse) => {
           if (error.status == 401) {
-            const redirectUrl = error.headers.get("Location");
-            const w: Window = this._document.defaultView!;
-            const location: Location = w.location;
+            const loginChallenge = error.headers.get("Login_Challenge");
 
-            if (redirectUrl)
-              location.href = redirectUrl;
+            if (loginChallenge)
+              this._router.navigate(["/login"], { queryParams: { loginChallenge } });
 
             return throwError(() => new Error("Need to Login!"));
           }

@@ -1,4 +1,6 @@
-﻿using System.Security.Claims;
+﻿using System.Net;
+using System.Security.Claims;
+using System.Text.Json;
 using DemoAuth.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -7,17 +9,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 {
-	builder.Services
+	_ = builder.Services
+		.AddMemoryCache()
 		.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
 		.AddOpenIdConnect(oidcOptions =>
 		{
 			oidcOptions.Authority = "https://dev-auth.rpgp.cc";
-			oidcOptions.ClientId = "839720f7-1f8a-47eb-9e2f-3e19c4cd29b8";
-			oidcOptions.ClientSecret = "ovO39z44UXk_1k0cDHRUlCo_Kx";
+			oidcOptions.ClientId = "a7718b62-4d03-461f-849f-a4d12698d533";
+			oidcOptions.ClientSecret = "2UeLZ0A4YNzEs.WDp.hx48h_Xd";
 			oidcOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 			oidcOptions.ResponseType = "code";
 			oidcOptions.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost;
@@ -28,7 +32,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 			oidcOptions.TokenValidationParameters.NameClaimType = ClaimTypes.NameIdentifier;
 
-			oidcOptions.Events.OnRedirectToIdentityProvider = ctx =>
+			oidcOptions.Events.OnRedirectToIdentityProvider = async ctx =>
 			{
 				if (!string.IsNullOrEmpty(ctx.ProtocolMessage.State))
 					ctx.Properties.Items[OpenIdConnectDefaults.UserstatePropertiesKey] = ctx.ProtocolMessage.State;
@@ -37,12 +41,36 @@ var builder = WebApplication.CreateBuilder(args);
 				ctx.Properties.Items.Add(OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, ctx.ProtocolMessage.RedirectUri);
 				ctx.ProtocolMessage.State = ctx.Options.StateDataFormat.Protect(ctx.Properties);
 
-				ctx.ProtocolMessage.SetParameter("brand_id", "3fa85f64-5717-4562-b3fc-2c963f66afa6");
+				//ctx.Response.StatusCode = 401;
+				//ctx.Response.Headers.Add("Location", ctx.ProtocolMessage.CreateAuthenticationRequestUrl());
+
+				var cookieContainer = new CookieContainer();
+
+
+
+				var httpClient = new HttpClient(new SocketsHttpHandler
+				{
+					CookieContainer = cookieContainer
+				});
+
+				var loginChallenge = await httpClient.GetAsync(ctx.ProtocolMessage.CreateAuthenticationRequestUrl())
+					.ToAsyncEnumerable()
+					.Do(response => response.EnsureSuccessStatusCode())
+					.SelectMany(response => response.Content.ReadAsStringAsync()
+						.ToAsyncEnumerable())
+					.FirstAsync();
+
 				ctx.Response.StatusCode = 401;
-				ctx.Response.Headers.Add("Location", ctx.ProtocolMessage.CreateAuthenticationRequestUrl());
+				ctx.Response.Headers.Add("Login_Challenge", loginChallenge);
+
+				var cache = ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+
+				cache.Set(loginChallenge, JsonSerializer.Serialize(cookieContainer.GetAllCookies()));
 
 				ctx.HandleResponse();
-
+			};
+			oidcOptions.Events.OnRemoteFailure = ctx =>
+			{
 				return Task.CompletedTask;
 			};
 		})
@@ -63,7 +91,8 @@ var builder = WebApplication.CreateBuilder(args);
 		.AddHttpFallbackPolicy()
 		.Services
 		.Configure<ForwardedHeadersOptions>(options => options.ForwardedHeaders =
-			ForwardedHeaders.All);
+			ForwardedHeaders.All)
+		.AddControllers();
 }
 
 var app = builder.Build();
@@ -74,6 +103,7 @@ var app = builder.Build();
 	app.UseAuthentication();
 	app.UseCaptureFunction();
 	app.UseAuthorization();
+	app.MapControllers();
 	//app.MapGet("/", () => "Hello World!");
 	app.MapGet("/api/account", () => "Hello World!")
 		.RequireAuthorization();
